@@ -1,6 +1,5 @@
 package com.example.workingwithstorage.repository
 
-import com.example.workingwithstorage.common.logDebug
 import com.example.workingwithstorage.data.DatabaseStrategy
 import com.example.workingwithstorage.data.PreferenceManager
 import com.example.workingwithstorage.data.SQLite.SQLiteDao
