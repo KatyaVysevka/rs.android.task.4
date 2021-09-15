@@ -1,40 +1,65 @@
 package com.example.workingwithstorage.repository
 
-
-import com.example.workingwithstorage.data.FilmDao
+import com.example.workingwithstorage.common.logDebug
+import com.example.workingwithstorage.data.DatabaseStrategy
+import com.example.workingwithstorage.data.PreferenceManager
+import com.example.workingwithstorage.data.SQLite.SQLiteDao
+import com.example.workingwithstorage.data.TypeDB
+import com.example.workingwithstorage.data.room.FilmDao
 import com.example.workingwithstorage.model.Film
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
+class FilmRepository @Inject constructor(
+    private val filmSQLite: SQLiteDao,
+    private val filmDao: FilmDao,
+    private val preferencesManager: PreferenceManager
+) {
 
-class FilmRepository (private val filmDao: FilmDao) {
+    private var filmBD: DatabaseStrategy = filmDao
 
-
-    fun getAll (): Flow<List<Film>> {
-        return filmDao.readAllData()
+    val job = CoroutineScope(Dispatchers.IO).launch {
+        preferencesManager.typeDB.collect {
+            when (it) {
+                TypeDB.ROOM.name -> filmBD = filmDao
+                TypeDB.SQL_LITE.name -> filmBD = filmSQLite
+            }
+        }
     }
 
-    fun sortedByTitle (): Flow<List<Film>> {
-        return filmDao.sortedByTitle()
+
+    fun getAll(): Flow<List<Film>> {
+        return filmBD.readAllData()
     }
 
-    fun sortedByCountry (): Flow<List<Film>> {
-        return filmDao.sortedByCountry()
+    fun sortedByTitle(): Flow<List<Film>> {
+        return filmBD.sortedByTitle()
     }
 
-    fun sortedByYear (): Flow<List<Film>> {
-        return filmDao.sortedByYear()
+    fun sortedByCountry(): Flow<List<Film>> {
+        return filmBD.sortedByCountry()
     }
 
-    suspend fun addFilm(film: Film){
-        filmDao.addFilm(film)
+    fun sortedByYear(): Flow<List<Film>> {
+        return filmBD.sortedByYear()
     }
 
-    suspend fun updateFilm (film: Film){
-        filmDao.updateFilm(film)
+    suspend fun addFilm(film: Film) {
+        filmBD.addFilm(film)
     }
 
-    suspend fun deleteFilm (film: Film){
-        filmDao.deleteFilm(film)
+    suspend fun updateFilm(film: Film) {
+        filmBD.updateFilm(film)
+    }
+
+    suspend fun deleteFilm(film: Film) {
+        filmBD.deleteFilm(film)
     }
 
 

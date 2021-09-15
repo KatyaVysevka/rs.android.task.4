@@ -20,6 +20,7 @@ import kotlinx.coroutines.InternalCoroutinesApi
 class AddFragment : Fragment() {
     private var _binding: FragmentAddBinding? = null
     private val binding: FragmentAddBinding get() = requireNotNull(_binding)
+
     @InternalCoroutinesApi
     private lateinit var mFilmViewModel: FilmViewModel
 
@@ -43,16 +44,17 @@ class AddFragment : Fragment() {
 
     @InternalCoroutinesApi
     private fun insertDataToDatabase() {
-
-
-        if(inputCheck(binding.editTitle.text.toString(),
+        if (inputCheck(
+                binding.editTitle.text.toString(),
                 binding.editCountry.text.toString(),
-                binding.editYear.text.toString())){
+                binding.editYear.text.toString()
+            )
+        ) {
             //create film object
             val title = binding.editTitle.text.toString()
             val country = binding.editCountry.text.toString()
             val year = binding.editYear.text
-            val film = Film(0,title, country, Integer.parseInt(year.toString()))
+            val film = Film(0, title, country, Integer.parseInt(year.toString()))
 
             //Add data to database
             mFilmViewModel.addFilm(film)
@@ -65,7 +67,7 @@ class AddFragment : Fragment() {
         }
     }
 
-    private fun inputCheck (title: String, country:String, year: String): Boolean{
+    private fun inputCheck(title: String, country: String, year: String): Boolean {
         return !(title.isBlank() || country.isBlank() || year.isBlank())
     }
 

@@ -9,18 +9,19 @@ import com.example.workingwithstorage.R
 import com.example.workingwithstorage.databinding.ItemBinding
 import com.example.workingwithstorage.model.Film
 
-class ListAdapter: RecyclerView.Adapter<ListAdapter.MyViewHolder>(){
-    private var filmList =  emptyList<Film>()
+class ListAdapter : RecyclerView.Adapter<ListAdapter.MyViewHolder>() {
+    private var filmList = emptyList<Film>()
 
-    class MyViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+    class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val binding = ItemBinding.bind(itemView)
-        fun bind (film: Film) = with(binding){
+        fun bind(film: Film) = with(binding) {
             textTitle.text = film.title
             textCountry.text = film.country
             textYear.text = film.year.toString()
 
             itemViewFilm.setOnClickListener {
-                val action = ListFragmentDirections.actionListFragmentToUpdateFragment(film)//тут на всякий случай пометка, если ломается то это здесь.
+                val action =
+                    ListFragmentDirections.actionListFragmentToUpdateFragment(film)//тут на всякий случай пометка, если ломается то это здесь.
                 itemViewFilm.findNavController().navigate(action)
             }
         }
@@ -42,7 +43,7 @@ class ListAdapter: RecyclerView.Adapter<ListAdapter.MyViewHolder>(){
         return filmList.size
     }
 
-    fun setData (film: List<Film>){
+    fun setData(film: List<Film>) {
         this.filmList = film
         notifyDataSetChanged()
     }

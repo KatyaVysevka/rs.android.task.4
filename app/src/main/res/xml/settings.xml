@@ -2,25 +2,33 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <SwitchPreference
-        android:key="prefTitle"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:summary="@string/setting_title"
-        android:title="@string/title"
-        app:defaultValue="false" />
-    <SwitchPreference
-        app:defaultValue="false"
-        android:key="prefCountry"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/country"
-        android:summary="@string/setting_country" />
-    <SwitchPreference
-        android:key="prefYear"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:summary="@string/setting_year"
-        android:title="@string/year"
-        app:defaultValue="false" />
+    <!--
+        Судя по экрану настроек, мы можем включить одновременно несколько сортировок
+        (например, сортировку по названию и по году). А в коде предполагается, что
+        мы можем выбрать либо только по названию, либо только по году. Я бы рекоммендовал
+        сделать так:
+            1) можно было выбрать одну опцию сортировки на экране настроек;
+            2) по умолчанию уже выбрана одна опция (например, title).
+    -->
+    <PreferenceCategory app:title="Sorting type">
+
+        <ListPreference
+            android:defaultValue="true"
+            android:entries="@array/sort_entries"
+            android:entryValues="@array/sort_values"
+            android:key="sort_type"
+            app:summary="%s"
+            app:title="@string/setting_choose_sorting" />
+    </PreferenceCategory>
+    <PreferenceCategory app:title="Database type">
+
+        <ListPreference
+            android:defaultValue="Room"
+            android:entries="@array/db_entries"
+            android:entryValues="@array/db_values"
+            android:key="db_type"
+            app:title="@string/setting_choose_DB"
+            app:summary="%s"/>
+    </PreferenceCategory>
+
 </PreferenceScreen>
