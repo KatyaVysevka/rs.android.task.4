@@ -2,28 +2,31 @@ package com.example.workingwithstorage.fragments.update
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextUtils
-import android.text.TextUtils.*
-import android.view.*
-import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.workingwithstorage.R
-import com.example.workingwithstorage.common.logDebug
 import com.example.workingwithstorage.databinding.FragmentUpdateBinding
 import com.example.workingwithstorage.model.Film
 import com.example.workingwithstorage.viewmodel.FilmViewModel
-import kotlinx.coroutines.InternalCoroutinesApi
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class UpdateFragment : Fragment() {
     private var _binding: FragmentUpdateBinding? = null
-    private val binding: FragmentUpdateBinding get() = requireNotNull(_binding)
+    private val binding: FragmentUpdateBinding
+        get() = requireNotNull(_binding)
+
     private val args by navArgs<UpdateFragmentArgs>()
-    @InternalCoroutinesApi
-    private lateinit var mFilmViewModel: FilmViewModel
+    private val filmViewModel by activityViewModels<FilmViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,10 +36,8 @@ class UpdateFragment : Fragment() {
         return binding.root
     }
 
-    @InternalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mFilmViewModel = ViewModelProvider(this).get(FilmViewModel::class.java)
 
         binding.apply {
             updateTitle.setText(args.currentFilm.title)
@@ -50,7 +51,7 @@ class UpdateFragment : Fragment() {
         //add menu
         setHasOptionsMenu(true)
     }
-    @InternalCoroutinesApi
+
     private fun updateItem() {
         if (inputCheck(binding.updateTitle.text.toString(),
                 binding.updateCountry.text.toString(),
@@ -61,10 +62,10 @@ class UpdateFragment : Fragment() {
             //create user Object
             val updatedFilm = Film(args.currentFilm.id, title, country, year)
             //update currentUser
-            mFilmViewModel.updateFilm(updatedFilm)
+            filmViewModel.updateFilm(updatedFilm)
             Toast.makeText(requireContext(), "Update successfully", Toast.LENGTH_SHORT).show()
             //navigated back
-            findNavController().navigate(R.id.action_updateFragment_to_listFragment)
+            findNavController().navigateUp()
         } else {
             Toast.makeText(requireContext(), "Please fill out all fields", Toast.LENGTH_LONG).show()
         }
@@ -79,7 +80,6 @@ class UpdateFragment : Fragment() {
         inflater.inflate(R.menu.delete_menu, menu)
     }
 
-    @InternalCoroutinesApi
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.menu_delete){
             deleteFilm()
@@ -87,23 +87,22 @@ class UpdateFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    @InternalCoroutinesApi
     private fun deleteFilm() {
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setPositiveButton("Yes"){_,_ ->
-            mFilmViewModel.deleteFilm(args.currentFilm)
-            Toast.makeText(
-                requireContext(),
-                "Successfully removed: ${args.currentFilm.title}",
-                Toast.LENGTH_SHORT).show()
-            findNavController().navigate(R.id.action_updateFragment_to_listFragment)
-        }
-        builder.setNegativeButton ("No"){_,_ ->
-
-        }
-        builder.setTitle("Delete ${args.currentFilm.title}?")
-        builder.setMessage("Are you sure you want to delete ${args.currentFilm.title}?")
-        builder.create().show()
+        AlertDialog.Builder(requireContext())
+            .setPositiveButton("Yes") { _, _ ->
+                filmViewModel.deleteFilm(args.currentFilm)
+                Toast.makeText(
+                    requireContext(),
+                    "Successfully removed: ${args.currentFilm.title}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                findNavController().navigateUp()
+            }
+            .setNegativeButton ("No") { _, _ -> }
+            .setTitle("Delete ${args.currentFilm.title}?")
+            .setMessage("Are you sure you want to delete ${args.currentFilm.title}?")
+            .create()
+            .show()
     }
 
     override fun onDestroyView() {

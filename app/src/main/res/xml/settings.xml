@@ -13,7 +13,7 @@
     <PreferenceCategory app:title="Sorting type">
 
         <ListPreference
-            android:defaultValue="true"
+            android:defaultValue="None"
             android:entries="@array/sort_entries"
             android:entryValues="@array/sort_values"
             android:key="sort_type"

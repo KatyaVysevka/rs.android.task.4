@@ -2,9 +2,9 @@ package com.example.workingwithstorage.common
 
 import android.util.Log
 
-var debug = "AppDebug"
+private const val DEFAULT_LOG_TAG = "AppDebug"
 
-fun logDebug(message: String) {
-    Log.d(debug, message)
+fun logDebug(message: String, tag: String = DEFAULT_LOG_TAG) {
+    Log.d(tag, message)
 }
 

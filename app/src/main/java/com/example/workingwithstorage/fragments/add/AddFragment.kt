@@ -1,28 +1,24 @@
 package com.example.workingwithstorage.fragments.add
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextUtils
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.workingwithstorage.R
 import com.example.workingwithstorage.databinding.FragmentAddBinding
 import com.example.workingwithstorage.model.Film
 import com.example.workingwithstorage.viewmodel.FilmViewModel
-import kotlinx.coroutines.InternalCoroutinesApi
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class AddFragment : Fragment() {
     private var _binding: FragmentAddBinding? = null
     private val binding: FragmentAddBinding get() = requireNotNull(_binding)
 
-    @InternalCoroutinesApi
-    private lateinit var mFilmViewModel: FilmViewModel
+    private val filmViewModel by activityViewModels<FilmViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,17 +28,14 @@ class AddFragment : Fragment() {
         return binding.root
     }
 
-    @InternalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mFilmViewModel = ViewModelProvider(this).get(FilmViewModel::class.java)
         binding.addBtn.setOnClickListener {
             insertDataToDatabase()
         }
 
     }
 
-    @InternalCoroutinesApi
     private fun insertDataToDatabase() {
         if (inputCheck(
                 binding.editTitle.text.toString(),
@@ -57,11 +50,11 @@ class AddFragment : Fragment() {
             val film = Film(0, title, country, Integer.parseInt(year.toString()))
 
             //Add data to database
-            mFilmViewModel.addFilm(film)
+            filmViewModel.addFilm(film)
             Toast.makeText(requireContext(), "Successfully added", Toast.LENGTH_LONG).show()
 
             //navigate back
-            findNavController().navigate(R.id.action_addFragment_to_listFragment)
+            findNavController().navigateUp()
         } else {
             Toast.makeText(requireContext(), "Please fill out all fields", Toast.LENGTH_LONG).show()
         }

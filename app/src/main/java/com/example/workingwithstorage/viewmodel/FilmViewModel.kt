@@ -1,82 +1,58 @@
 package com.example.workingwithstorage.viewmodel
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.workingwithstorage.data.PreferenceManager
-import com.example.workingwithstorage.data.SQLite.FilmSQLiteHelper
-import com.example.workingwithstorage.data.SQLite.SQLiteDao
-import com.example.workingwithstorage.data.room.FilmDatabase
+import com.example.workingwithstorage.data.SortMode
+import com.example.workingwithstorage.data.repository.FilmRepository
 import com.example.workingwithstorage.model.Film
-import com.example.workingwithstorage.repository.FilmRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.InternalCoroutinesApi
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
-@InternalCoroutinesApi
-class FilmViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: FilmRepository
-    var allFilm: LiveData<List<Film>>
+// Довольно странно, что эта ViewModel лежит отдельно от других (другие лежат рядом с фрагментами).
+// Я бы переместил эту ViewModel поближе к `fragment.*` пакету.
+@HiltViewModel
+class FilmViewModel @Inject constructor(
+    application: Application,
+    private val repository: FilmRepository,
+    private val preferenceManager: PreferenceManager,
+) : AndroidViewModel(application) {
 
+    val allFilm: LiveData<List<Film>>
 
     init {
-        val filmBDRoom = FilmDatabase.getDatabase(application, viewModelScope).filmDao()
-        val preferenceManager = PreferenceManager(application)
-        val filmBDLite = SQLiteDao(
-            sqlLite = FilmSQLiteHelper(application),
-            preferencesManager = preferenceManager,
-        )
-        repository = FilmRepository(filmBDLite, filmBDRoom, preferenceManager)
-        allFilm = repository.getAll().asLiveData()
-//        val allFilmLive: LiveData<List<Film>> = Transformations.map(allFilm){
-//                film -> repository.getAll(film)
-//        }
-    }
-
-
-    fun sortedByTitle() {
-        viewModelScope.launch(Dispatchers.IO) {
-            // Здесь делается не совсем честная подмена источника данных:
-            // кто-то уже мог быть подписан на прошлую версию `allFilm: LiveData`
-            // и поэтому те обсерверы не получат новые данные.
-            // Глянуть как советуют избежать такой ситуации можно здесь:
-            // https://stackoverflow.com/questions/48081950/how-can-i-change-in-viewmodel-source-of-my-livedata-from-room-dao
-            // https://developer.android.com/topic/libraries/architecture/livedata#transform_livedata
-            allFilm = repository.sortedByTitle().asLiveData()
-        }
-    }
-
-    fun sortedByCountry() {
-        viewModelScope.launch(Dispatchers.IO) {
-            allFilm = repository.sortedByCountry().asLiveData()
-        }
-    }
-
-    fun sortedByYear() {
-        viewModelScope.launch(Dispatchers.IO) {
-            allFilm = repository.sortedByYear().asLiveData()
-        }
+        allFilm = preferenceManager.sortModeFlow
+            .flatMapLatest { mode ->
+                when (mode) {
+                    SortMode.NONE -> repository.getAll()
+                    SortMode.BY_TITLE -> repository.sortedByTitle()
+                    SortMode.BY_COUNTRY -> repository.sortedByCountry()
+                    SortMode.BY_YEAR -> repository.sortedByYear()
+                }
+            }
+            .asLiveData()
     }
 
     fun addFilm(film: Film) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             repository.addFilm(film)
         }
     }
 
     fun updateFilm(film: Film) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             repository.updateFilm(film)
         }
     }
 
     fun deleteFilm(film: Film) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             repository.deleteFilm(film)
         }
-    }
-
-    override fun onCleared() {
-        repository.job.cancel()
-        super.onCleared()
     }
 }
