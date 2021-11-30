@@ -20,33 +20,36 @@
             android:id="@+id/action_listFragment_to_filterFragment"
             app:destination="@id/filterFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/addFragment"
         android:name="com.example.workingwithstorage.fragments.add.AddFragment"
         android:label="Add film"
-        tools:layout="@layout/fragment_add" >
-        <action
-            android:id="@+id/action_addFragment_to_listFragment"
-            app:destination="@id/listFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_add" />
+
     <fragment
         android:id="@+id/updateFragment"
         android:name="com.example.workingwithstorage.fragments.update.UpdateFragment"
         android:label="Update"
         tools:layout="@layout/fragment_update" >
-        <action
-            android:id="@+id/action_updateFragment_to_listFragment"
-            app:destination="@id/listFragment" />
+        <!--
+            Обычно передают ID фильма вместо самой сущности, а сущность (Film)
+            уже подымают во время инита UpdateFragment. Это делается для того,
+            чтобы:
+             1) получать каждый раз актуальные данные по ID;
+             2) лишний раз не имплементить Parcelable/Serializable над моделью из data слоя
+                только ради передачи данных;
+             3) данные могут просто не подходить по сериализацию (допустим, что Film содержит
+                ссылку на большую битмапу в себе).
+        -->
         <argument
             android:name="currentFilm"
             app:argType="com.example.workingwithstorage.model.Film" />
     </fragment>
+
     <fragment
         android:id="@+id/filterFragment"
         android:name="com.example.workingwithstorage.fragments.filter.FilterFragment"
-        android:label="FilterFragment" >
-        <action
-            android:id="@+id/action_filterFragment_to_listFragment"
-            app:destination="@id/listFragment" />
-    </fragment>
+        android:label="FilterFragment" />
+
 </navigation>
